@@ -15,7 +15,7 @@ const env = getClientEnvironment(publicUrl);
 module.exports = {
     mode: 'production',
 
-    entry: paths.appIndexJs,
+    entry: paths.appIndex,
 
     output: {
         filename: 'bundle.js',
