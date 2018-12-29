@@ -2,11 +2,10 @@
 
 const data = require('../data');
 const paths = require('../paths');
-const webpack = require('webpack');
-const InterpolateHtmlPlugin = require('interpolate-html-plugin');
-const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin');
 const getClientEnvironment = require('../env');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
+const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const publicPath = paths.servedPath;
 const publicUrl = publicPath.slice(0, -1);
@@ -18,9 +17,10 @@ module.exports = {
     entry: paths.appIndex,
 
     output: {
-        filename: 'bundle.js',
-        path: __dirname,
-        libraryTarget: 'umd'
+        filename: '[name].js',
+        path: paths.appBuild,
+        libraryTarget: 'umd',
+        globalObject: "this"
     },
 
     resolve: {
@@ -72,8 +72,22 @@ module.exports = {
                         test: /\.css$/,
                         include: paths.appSrc,
                         use: [
-                            {loader: "style-loader"},
-                            {loader: "css-loader"}
+                            MiniCssExtractPlugin.loader, //'isomorphic-style-loader',
+                            {loader: 'css-loader'},
+                        ]
+                    },
+                    {
+                        test: /\.less$/,
+                        include: paths.appSrc,
+                        use: [
+                            MiniCssExtractPlugin.loader, //'isomorphic-style-loader',
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    importLoaders: 1
+                                }
+                            },
+                            {loader: "less-loader"}
                         ]
                     },
                     {
@@ -89,15 +103,23 @@ module.exports = {
     },
 
     plugins: [
-        new HtmlWebpackPlugin({
-            inject: true,
-            template: paths.appHtml
-        }),
-        new InterpolateHtmlPlugin({
-            PUBLIC_URL: publicUrl
-        }),
         new webpack.NamedModulesPlugin(),
         new webpack.DefinePlugin(env.stringified),
-        new webpack.HotModuleReplacementPlugin({})
-    ]
+        new webpack.HotModuleReplacementPlugin({}),
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // both options are optional
+            filename: "[name].css",
+            chunkFilename: "[id].css"
+        }),
+        new StaticSiteGeneratorPlugin(data),
+    ],
+
+    node: {
+        dgram: 'empty',
+        fs: 'empty',
+        net: 'empty',
+        tls: 'empty',
+        child_process: 'empty',
+    },
 };
