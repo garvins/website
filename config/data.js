@@ -3,6 +3,7 @@ module.exports = {
     paths: [
         '/',
         '/vacancies/',
-        '/companies/',
-    ]
+        '/vacancy/',
+        '/company/',
+    ],
 };
